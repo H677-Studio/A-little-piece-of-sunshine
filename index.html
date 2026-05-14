@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A little piece of Sunshine </title>
+    <style>
+        /* 1. Background Halaman Utama */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa; /* Warna putih abu-abu bersih */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* 2. Gaya Halaman Pembuka (Intro) */
+        #intro-page {
+            text-align: center;
+            z-index: 10;
+            transition: opacity 0.8s ease;
+        }
+
+        h1 {
+            font-weight: 300;
+            color: #444;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 15px 40px;
+            background: transparent;
+            border: 1px solid #888;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #444;
+            color: white;
+        }
+
+        /* 3. Gaya Video (Bisa Diatur Posisinya) */
+        #video-container {
+            display: none; /* Sembunyi dulu sebelum di-klik */
+            opacity: 0;
+            transition: opacity 1s ease;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        video {
+            /* PENGATURAN POSISI DI SINI */
+            position: absolute;
+            top: 15%;      /* Jarak dari atas */
+            left: 10%;     /* Jarak dari kiri (Biar nggak di tengah) */
+            width: 300px;  /* Lebar video sesuai kemauanmu */
+            
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HALAMAN PEMBUKA -->
+    <div id="intro-page">
+        <h1>Our Memories</h1>
+        <button onclick="startExperience()">Click to see memories</button>
+    </div>
+
+    <!-- HALAMAN VIDEO -->
+    <div id="video-container">
+        <video id="myVideo" playsinline>
+            <source src="video.mp4" type="video/mp4">
+            Browser kamu tidak mendukung video.
+        </video>
+    </div>
+
+    <script>
+        function startExperience() {
+            // Sembunyikan intro
+            document.getElementById('intro-page').style.opacity = '0';
+            
+            setTimeout(() => {
+                document.getElementById('intro-page').style.display = 'none';
+                
+                // Munculkan video
+                const container = document.getElementById('video-container');
+                const video = document.getElementById('myVideo');
+                
+                container.style.display = 'block';
+                setTimeout(() => { container.style.opacity = '1'; }, 50);
+                
+                // Play video dengan suara!
+                video.play();
+            }, 800);
+        }
+    </script>
+</body>
+</html>
