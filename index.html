@@ -1,98 +1,181 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Love Heart Canvas</title>
-    <style>
-        /* Mengatur tampilan layar penuh dan latar belakang hitam */
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-        }
-        body { 
-            background: #000; 
-            overflow: hidden; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-        }
-        canvas { 
-            display: block; 
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>heart.PROTOCOL</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; width: 100vw; height: 100vh; }
+
+  #terminal {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start; padding: 60px;
+    z-index: 10; background: #000; transition: opacity 1s ease;
+  }
+  .terminal-line { color: #fff; font-size: clamp(12px,2vw,16px); opacity: 0; margin-bottom: 10px; white-space: nowrap; }
+  .terminal-line.system { color: #888; }
+  .terminal-line.ready  { color: #ff2d55; }
+  .terminal-line.msg    { color: #fff; font-style: italic; }
+
+  #decrypt-btn {
+    margin-top: 28px; padding: 10px 24px; border: 1.5px solid #ff2d55;
+    background: transparent; color: #ff2d55; font-family: 'Courier New', monospace;
+    font-size: 13px; letter-spacing: 2px; cursor: pointer; opacity: 0;
+    transition: background 0.3s, color 0.3s;
+  }
+  #decrypt-btn:hover { background: #ff2d55; color: #000; }
+
+  #canvas { position: fixed; inset: 0; opacity: 0; transition: opacity 0.8s ease; }
+
+  .word {
+    position: absolute; color: #ff2d55; font-family: 'Courier New', monospace;
+    font-size: 11px; white-space: nowrap; opacity: 0; pointer-events: none;
+    text-shadow: 0 0 8px rgba(255,45,85,0.6);
+    transition: opacity 0.9s ease;
+  }
+  .word.bright {
+    color: #ff6b8a; font-weight: bold;
+    text-shadow: 0 0 12px rgba(255,45,85,0.9), 0 0 24px rgba(255,45,85,0.4);
+  }
+</style>
 </head>
 <body>
 
-    <canvas id="c"></canvas>
+<div id="terminal">
+  <div class="terminal-line system" id="t1">[system] Initializing heart.PROTOCOL_v2.0 ...</div>
+  <div class="terminal-line ready"  id="t2">[status] READY</div>
+  <div class="terminal-line msg"    id="t3">&gt; One encrypted package found for you.</div>
+  <button id="decrypt-btn" onclick="startHeart()">🔒 DECRYPT MESSAGE</button>
+</div>
 
-    <script>
-        const canvas = document.getElementById("c");
-        const ctx = canvas.getContext("2d");
+<div id="canvas"></div>
 
-        // Mengatur ukuran canvas sesuai ukuran layar browser
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+<script>
+  const WORD  = "i love you";
+  const COUNT = 300;
+  const words = [];
+  let isDecrypted = false; // Flag status dekripsi
 
-        let angle = 0;
-        const NUM_STEPS = 70;
-        const SCALE = 12; // Ukuran hati (bisa kamu besarkan/kecilkan di sini)
-        const TEXT = "I love you";
-
-        // Rumus matematika matematika untuk koordinat X dan Y bentuk hati
-        function heartX(t) { 
-            return 16 * Math.pow(Math.sin(t), 3); 
+  // terminal intro
+  function showTerminal() {
+    ['t1','t2','t3'].forEach((id, i) => {
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if(el) {
+          el.style.transition = 'opacity 0.6s ease';
+          el.style.opacity = '1';
         }
-        
-        function heartY(t) { 
-            return 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t); 
-        }
+      }, 600 + i * 700);
+    });
+    setTimeout(() => {
+      const btn = document.getElementById('decrypt-btn');
+      if(btn) {
+        btn.style.transition = 'opacity 0.8s ease';
+        btn.style.opacity = '1';
+      }
+    }, 2800);
+  }
 
-        // Fungsi animasi untuk menggambar teks berbentuk hati
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const cx = canvas.width / 2;
-            const cy = canvas.height / 2;
+  // ── Francisca's exact heart formula ────────────────────────────
+  function heartX(t) { return 16 * Math.pow(Math.sin(t), 3); }
+  function heartY(t) { return 13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t); }
 
-            ctx.font = "bold 11px Arial";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
+  // ── Generate posisi koordinat hati ────────────────────────────
+  function getHeartPositions() {
+    const W  = window.innerWidth;
+    const H  = window.innerHeight;
+    const cx = W / 2;
+    const cy = H / 2;
+    const scale = Math.min(W, H) * 0.022;
 
-            // Melakukan perulangan untuk memunculkan teks di sepanjang garis hati
-            for (let i = 0; i < NUM_STEPS; i++) {
-                // Menghitung sudut untuk setiap teks
-                let t = (i / NUM_STEPS) * Math.PI * 2 + angle;
-                
-                // Menentukan posisi koordinat X dan Y berdasarkan rumus hati
-                let x = cx + heartX(t) * SCALE;
-                let y = cy - heartY(t) * SCALE; // Dikurang (-) supaya posisi hatinya tidak terbalik
+    const positions = [];
+    // Menggunakan pola seed acak yang konsisten agar posisi jitter tidak acak-acakan saat di-resize
+    Math.seedrandom = function(v) { return function() { v = Math.sin(v) * 10000; return v - Math.floor(v); }; };
+    const random = Math.seedrandom(42); 
 
-                // Efek warna gradasi merah-pink menyala
-                let alpha = 0.3 + 0.7 * Math.sin(t + angle);
-                ctx.fillStyle = `rgba(255, 20, 147, ${alpha})`;
-                ctx.shadowColor = "rgba(255, 0, 100, 1)";
-                ctx.shadowBlur = 10;
+    for (let i = 0; i < COUNT; i++) {
+      const t = (i / COUNT) * 2 * Math.PI;
+      const jitterScale = scale * 0.18;
+      const jx = (random() - 0.5) * jitterScale;
+      const jy = (random() - 0.5) * jitterScale;
 
-                // Gambar teks "I love you" di koordinat tersebut
-                ctx.fillText(TEXT, x, y);
-            }
+      positions.push({
+        x: cx + heartX(t) * scale + jx,
+        y: cy - heartY(t) * scale + jy
+      });
+    }
+    return positions;
+  }
 
-            // Membuat hatinya berputar pelan secara otomatis
-            angle += 0.005; 
-            requestAnimationFrame(draw);
-        }
+  // ── Build elemen teks ke dalam canvas ──────────────────────────
+  function buildWords() {
+    const container = document.getElementById('canvas');
+    const pos = getHeartPositions();
 
-        // Jalankan fungsi animasi
-        draw();
+    for (let i = 0; i < COUNT; i++) {
+      const el = document.createElement('div');
+      el.className = 'word' + (Math.random() < 0.15 ? ' bright' : '');
+      el.textContent = WORD;
+      el.style.left    = (pos[i].x - 38) + 'px';
+      el.style.top     = (pos[i].y - 6)  + 'px';
+      el.style.opacity = '0';
+      container.appendChild(el);
+      words.push(el);
+    }
+  }
 
-        // Biar ukuran canvas otomatis menyesuaikan kalau layar di-resize atau HP dimiringkan
-        window.addEventListener("resize", () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-    </script>
+  // ── Fungsi kalkulasi ulang posisi saat layar di-resize ──────────
+  function updatePositions() {
+    const pos = getHeartPositions();
+    for (let i = 0; i < COUNT; i++) {
+      if (words[i]) {
+        words[i].style.left = (pos[i].x - 38) + 'px';
+        words[i].style.top  = (pos[i].y - 6)  + 'px';
+      }
+    }
+  }
+
+  // ── Klik decrypt → fade in satu-satu acak → hati terbentuk ─────
+  function startHeart() {
+    isDecrypted = true;
+    const terminal = document.getElementById('terminal');
+    terminal.style.opacity = '0';
+    setTimeout(() => { terminal.style.display = 'none'; }, 1000);
+
+    document.getElementById('canvas').style.opacity = '1';
+
+    const shuffled = [...words].sort(() => Math.random() - 0.5);
+    const totalDuration = 3200;
+
+    shuffled.forEach(el => {
+      setTimeout(() => {
+        el.style.opacity = (0.45 + Math.random() * 0.55).toString();
+      }, Math.random() * totalDuration);
+    });
+
+    setTimeout(() => {
+      words.forEach(el => { el.style.transition = 'opacity 2s ease'; });
+      pulseGlow();
+    }, totalDuration + 1000);
+  }
+
+  function pulseGlow() {
+    let dim = true;
+    setInterval(() => {
+      words.forEach(el => {
+        const base = 0.4 + Math.random() * 0.5;
+        el.style.opacity = dim ? (base * 0.5).toString() : base.toString();
+      });
+      dim = !dim;
+    }, 2500);
+  }
+
+  // Listener untuk resize layar agar posisi hati tetap presisi di tengah
+  window.addEventListener('resize', updatePositions);
+
+  buildWords();
+  showTerminal();
+</script>
 </body>
 </html>
