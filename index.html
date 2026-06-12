@@ -3,107 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A little piece of Sunshine </title>
+    <title>Love You</title>
     <style>
-        /* 1. Background Halaman Utama */
+        /* Mengatur latar belakang hitam gelap khas kode pemrograman */
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8f9fa; /* Warna putih abu-abu bersih */
-            height: 100vh;
+            background-color: #09090b;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', Courier, monospace; /* Gaya font kode */
             overflow: hidden;
         }
 
-        /* 2. Gaya Halaman Pembuka (Intro) */
-        #intro-page {
-            text-align: center;
-            z-index: 10;
-            transition: opacity 0.8s ease;
-        }
-
-        h1 {
-            font-weight: 300;
-            color: #444;
-            letter-spacing: 2px;
-            margin-bottom: 30px;
-        }
-
-        button {
-            padding: 15px 40px;
-            background: transparent;
-            border: 1px solid #888;
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        button:hover {
-            background: #444;
-            color: white;
-        }
-
-        /* 3. Gaya Video (Bisa Diatur Posisinya) */
-        #video-container {
-            display: none; /* Sembunyi dulu sebelum di-klik */
-            opacity: 0;
-            transition: opacity 1s ease;
+        /* Container utama pembentuk hati */
+        .heart-container {
             position: relative;
-            width: 100%;
-            height: 100%;
+            width: 500px;
+            height: 450px;
+            text-align: justify;
+            word-break: break-all;
+            font-size: 10px;
+            font-weight: bold;
+            line-height: 9px;
+            color: #ff003c; /* Warna merah neon */
+            text-shadow: 0 0 4px #ff003c, 0 0 12px #ff4d6d; /* Efek menyala/glow */
+            user-select: none;
         }
 
-        video {
-            /* PENGATURAN POSISI DI SINI */
+        /* Trik CSS membuat bentuk lengkungan hati kiri dan kanan */
+        .heart-container::before,
+        .heart-container::after {
+            content: "";
+            width: 50%;
+            height: 100%;
+            float: left;
+            shape-image-threshold: 0.5;
+        }
+
+        .heart-container::before {
+            shape-outside: polygon(50% 0%, 100% 0%, 100% 35%, 60% 70%, 0% 100%, 0% 35%, 15% 10%);
+            clip-path: polygon(50% 0%, 100% 0%, 100% 35%, 60% 70%, 0% 100%, 0% 35%, 15% 10%);
+        }
+
+        .heart-container::after {
+            float: right;
+            shape-outside: polygon(50% 0%, 0% 0%, 0% 35%, 40% 70%, 100% 100%, 100% 35%, 85% 10%);
+            clip-path: polygon(50% 0%, 0% 0%, 0% 35%, 40% 70%, 100% 100%, 100% 35%, 85% 10%);
+        }
+
+        /* Teks utama "Love you." yang besar di bagian tengah */
+        .center-text {
             position: absolute;
-            top: 15%;      /* Jarak dari atas */
-            left: 10%;     /* Jarak dari kiri (Biar nggak di tengah) */
-            width: 300px;  /* Lebar video sesuai kemauanmu */
-            
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%)\;;
+            font-family: 'Inter', sans-serif;
+            font-size: 42px;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.6), 0 0 20px rgba(255,77,109,0.3);
+            font-weight: 600;
+            z-index: 10;
+            white-space: nowrap;
         }
     </style>
 </head>
 <body>
 
-    <!-- HALAMAN PEMBUKA -->
-    <div id="intro-page">
-        <h1>Our Memories</h1>
-        <button onclick="startExperience()">Click to see memories</button>
-    </div>
+    <!-- Teks besar di tengah -->
+    <div class="center-text">Love you.</div>
 
-    <!-- HALAMAN VIDEO -->
-    <div id="video-container">
-        <video id="myVideo" playsinline>
-            <source src="video.mp4" type="video/mp4">
-            Browser kamu tidak mendukung video.
-        </video>
+    <!-- Teks kecil-kecil yang membentuk hati -->
+    <div class="heart-container" id="heart">
+        <!-- Teks akan diisi otomatis menggunakan JavaScript di bawah ini agar rapi -->
     </div>
 
     <script>
-        function startExperience() {
-            // Sembunyikan intro
-            document.getElementById('intro-page').style.opacity = '0';
-            
-            setTimeout(() => {
-                document.getElementById('intro-page').style.display = 'none';
-                
-                // Munculkan video
-                const container = document.getElementById('video-container');
-                const video = document.getElementById('myVideo');
-                
-                container.style.display = 'block';
-                setTimeout(() => { container.style.opacity = '1'; }, 50);
-                
-                // Play video dengan suara!
-                video.play();
-            }, 800);
-        }
+        // Mengisi container dengan tulisan "i love you" berulang-ulang sampai penuh berbentuk hati
+        const container = document.getElementById('heart');
+        const textToRepeat = "iloveyou ";
+        
+        // Kita ulang teksnya sebanyak 350 kali supaya membentuk pola hati yang padat
+        container.innerHTML = textToRepeat.repeat(350);
     </script>
+
 </body>
 </html>
