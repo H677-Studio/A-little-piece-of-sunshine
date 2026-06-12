@@ -163,3 +163,59 @@
     document.getElementById('canvas').style.opacity = '1';
     const mainText = document.getElementById('main-text');
     mainText.style.opacity = '1';
+
+    // Mengacak urutan kemunculan semua elemen kata
+    const shuffled = [...words].sort(() => Math.random() - 0.5);
+    const maxDelay = 2200; // Total waktu rentang kemunculan acak teks kecil (dalam milidetik)
+
+    shuffled.forEach(el => {
+      setTimeout(() => {
+        // Mengubah nilai kejelasan (fade-in) tanpa mengubah posisi koordinat
+        el.style.opacity = (0.45 + Math.random() * 0.55).toString();
+      }, Math.random() * maxDelay);
+    });
+
+    // Mengubah teks tengah ("Love you." -> nama target) setelah hati terbentuk sempurna
+    setTimeout(() => {
+      mainText.style.opacity = '0';
+      mainText.style.transform = 'translate(-50%, -50%) scale(0.95)';
+      
+      setTimeout(() => {
+        mainText.textContent = "DEAR_POLLY"; // GANTI NAMA DIA DI SINI ❤️
+        mainText.style.opacity = '1';
+        mainText.style.transform = 'translate(-50%, -50%) scale(1)';
+        
+        // Mulai animasi kedap-kedip halus setelah semua rampung
+        pulseGlow();
+      }, 800);
+    }, maxDelay + 400);
+  }
+
+  // Efek denyut lampu/glow lembut pasca animasi selesai
+  function pulseGlow() {
+    let dim = true;
+    setInterval(() => {
+      words.forEach(el => {
+        const base = 0.5 + Math.random() * 0.5;
+        el.style.opacity = dim ? (base * 0.4).toString() : base.toString();
+      });
+      dim = !dim;
+    }, 2000);
+  }
+
+  // Menjaga posisi bentuk hati tetap presisi di tengah jika ukuran jendela browser berubah
+  window.addEventListener('resize', () => {
+    const pos = getHeartPositions();
+    words.forEach((el, i) => {
+      if (el) {
+        el.style.left = pos[i].x + 'px';
+        el.style.top = pos[i].y + 'px';
+      }
+    });
+  });
+
+  buildWords();
+  showTerminal();
+</script>
+</body>
+</html>
