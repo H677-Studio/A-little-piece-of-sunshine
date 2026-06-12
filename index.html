@@ -8,6 +8,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; width: 100vw; height: 100vh; }
 
+  /* Tampilan Terminal Awal */
   #terminal {
     position: fixed; inset: 0; display: flex; flex-direction: column;
     justify-content: center; align-items: flex-start; padding: 60px;
@@ -18,87 +19,100 @@
   .terminal-line.ready  { color: #ff2d55; }
   .terminal-line.msg    { color: #fff; font-style: italic; }
 
+  /* Desain Tombol Decrypt */
   #decrypt-btn {
     margin-top: 28px; padding: 10px 24px; border: 1.5px solid #ff2d55;
     background: transparent; color: #ff2d55; font-family: 'Courier New', monospace;
     font-size: 13px; letter-spacing: 2px; cursor: pointer; opacity: 0;
-    transition: background 0.3s, color 0.3s;
+    transition: background 0.3s, color 0.3s, transform 0.1s;
   }
   #decrypt-btn:hover { background: #ff2d55; color: #000; }
+  #decrypt-btn:active { transform: scale(0.95); }
 
-  #canvas { position: fixed; inset: 0; opacity: 0; transition: opacity 0.8s ease; }
+  .sub-text { color: #555; font-size: 11px; margin-top: 8px; opacity: 0; }
 
+  /* Canvas tempat teks hati berada */
+  #canvas { position: fixed; inset: 0; opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
+
+  /* Desain Teks Besar di Tengah */
+  .center-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: clamp(32px, 5vw, 56px); color: #ffffff; font-weight: bold;
+    text-shadow: 0 0 15px rgba(255,255,255,0.4); z-index: 5;
+    opacity: 0; transition: opacity 1s ease, transform 1s ease;
+  }
+
+  /* Elemen Kata "i love you" Kecil */
   .word {
     position: absolute; color: #ff2d55; font-family: 'Courier New', monospace;
-    font-size: 11px; white-space: nowrap; opacity: 0; pointer-events: none;
-    text-shadow: 0 0 8px rgba(255,45,85,0.6);
-    transition: opacity 0.9s ease;
+    font-size: 11px; white-space: nowrap; pointer-events: none;
+    text-shadow: 0 0 8px rgba(255,45,85,0.7);
+    /* Transisi smooth untuk menciptakan efek ledakan lalu merapat */
+    transition: left 2.2s cubic-bezier(0.19, 1, 0.22, 1), 
+                top 2.2s cubic-bezier(0.19, 1, 0.22, 1), 
+                opacity 1.5s ease;
   }
   .word.bright {
     color: #ff6b8a; font-weight: bold;
-    text-shadow: 0 0 12px rgba(255,45,85,0.9), 0 0 24px rgba(255,45,85,0.4);
+    text-shadow: 0 0 12px rgba(255,45,85,1), 0 0 24px rgba(255,45,85,0.5);
   }
 </style>
 </head>
-<body>
+<body onclick="handleGlobalClick()">
 
 <div id="terminal">
   <div class="terminal-line system" id="t1">[system] Initializing heart.PROTOCOL_v2.0 ...</div>
   <div class="terminal-line ready"  id="t2">[status] READY</div>
   <div class="terminal-line msg"    id="t3">&gt; One encrypted package found for you.</div>
-  <button id="decrypt-btn" onclick="startHeart()">🔒 DECRYPT MESSAGE</button>
+  <button id="decrypt-btn" onclick="startHeart(event)">🔒 DECRYPT MESSAGE</button>
+  <div class="sub-text" id="t4">(or just click anywhere)</div>
 </div>
 
-<div id="canvas"></div>
+<div id="canvas">
+  <div class="center-text" id="main-text">Love you.</div>
+</div>
 
 <script>
   const WORD  = "i love you";
-  const COUNT = 300;
+  const COUNT = 320; // Jumlah teks diperbanyak biar hatinya makin padat manis
   const words = [];
-  let isDecrypted = false; // Flag status dekripsi
+  let isDecrypted = false;
 
-  // terminal intro
+  // Efek ngetik/muncul satu-satu di terminal awal
   function showTerminal() {
     ['t1','t2','t3'].forEach((id, i) => {
       setTimeout(() => {
         const el = document.getElementById(id);
-        if(el) {
-          el.style.transition = 'opacity 0.6s ease';
-          el.style.opacity = '1';
-        }
-      }, 600 + i * 700);
+        if(el) { el.style.opacity = '1'; }
+      }, 500 + i * 600);
     });
     setTimeout(() => {
       const btn = document.getElementById('decrypt-btn');
-      if(btn) {
-        btn.style.transition = 'opacity 0.8s ease';
-        btn.style.opacity = '1';
-      }
-    }, 2800);
+      const sub = document.getElementById('t4');
+      if(btn) btn.style.opacity = '1';
+      if(sub) sub.style.opacity = '1';
+    }, 2300);
   }
 
-  // ── Francisca's exact heart formula ────────────────────────────
+  // Rumus matematika bentuk hati matematika
   function heartX(t) { return 16 * Math.pow(Math.sin(t), 3); }
   function heartY(t) { return 13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t); }
 
-  // ── Generate posisi koordinat hati ────────────────────────────
+  // Mencari titik akhir (bentuk hati)
   function getHeartPositions() {
     const W  = window.innerWidth;
     const H  = window.innerHeight;
     const cx = W / 2;
     const cy = H / 2;
-    const scale = Math.min(W, H) * 0.022;
+    const scale = Math.min(W, H) * 0.021; // Skala disesuaikan layar otomatis
 
     const positions = [];
-    // Menggunakan pola seed acak yang konsisten agar posisi jitter tidak acak-acakan saat di-resize
-    Math.seedrandom = function(v) { return function() { v = Math.sin(v) * 10000; return v - Math.floor(v); }; };
-    const random = Math.seedrandom(42); 
-
     for (let i = 0; i < COUNT; i++) {
       const t = (i / COUNT) * 2 * Math.PI;
-      const jitterScale = scale * 0.18;
-      const jx = (random() - 0.5) * jitterScale;
-      const jy = (random() - 0.5) * jitterScale;
+      const jitter = scale * 0.15;
+      const jx = (Math.random() - 0.5) * jitter;
+      const jy = (Math.random() - 0.5) * jitter;
 
       positions.push({
         x: cx + heartX(t) * scale + jx,
@@ -108,71 +122,118 @@
     return positions;
   }
 
-  // ── Build elemen teks ke dalam canvas ──────────────────────────
+  // Membuat element teks awal menumpuk di TENGAH (titik pusat ledakan)
   function buildWords() {
     const container = document.getElementById('canvas');
-    const pos = getHeartPositions();
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    const finalPos = getHeartPositions();
 
     for (let i = 0; i < COUNT; i++) {
       const el = document.createElement('div');
       el.className = 'word' + (Math.random() < 0.15 ? ' bright' : '');
       el.textContent = WORD;
-      el.style.left    = (pos[i].x - 38) + 'px';
-      el.style.top     = (pos[i].y - 6)  + 'px';
+      
+      // Set posisi awal tepat di tengah layar (pusat ledakan)
+      el.style.left = (cx - 35) + 'px';
+      el.style.top = (cy - 6) + 'px';
       el.style.opacity = '0';
+      
+      // Simpan koordinat target hatinya di element data attribute
+      el.dataset.targetX = finalPos[i].x - 35;
+      el.dataset.targetY = finalPos[i].y - 6;
+
       container.appendChild(el);
       words.push(el);
     }
   }
 
-  // ── Fungsi kalkulasi ulang posisi saat layar di-resize ──────────
-  function updatePositions() {
-    const pos = getHeartPositions();
-    for (let i = 0; i < COUNT; i++) {
-      if (words[i]) {
-        words[i].style.left = (pos[i].x - 38) + 'px';
-        words[i].style.top  = (pos[i].y - 6)  + 'px';
-      }
-    }
+  // Handler klik di mana saja (sesuai fitur di video)
+  function handleGlobalClick() {
+    if (!isDecrypted) startHeart();
   }
 
-  // ── Klik decrypt → fade in satu-satu acak → hati terbentuk ─────
-  function startHeart() {
+  // Eksekusi animasi utama saat didekripsi
+  function startHeart(e) {
+    if (e) e.stopPropagation(); // Mencegah double trigger kalau klik tombol
+    if (isDecrypted) return;
     isDecrypted = true;
+
+    // Sembunyikan terminal
     const terminal = document.getElementById('terminal');
     terminal.style.opacity = '0';
     setTimeout(() => { terminal.style.display = 'none'; }, 1000);
 
+    // Tampilkan canvas dan text besar tengah
     document.getElementById('canvas').style.opacity = '1';
+    const mainText = document.getElementById('main-text');
+    mainText.style.opacity = '1';
 
-    const shuffled = [...words].sort(() => Math.random() - 0.5);
-    const totalDuration = 3200;
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
 
-    shuffled.forEach(el => {
-      setTimeout(() => {
-        el.style.opacity = (0.45 + Math.random() * 0.55).toString();
-      }, Math.random() * totalDuration);
+    // STEP 1: EFEK LEDAKAN (Melebar keluar membentuk lingkaran acak)
+    words.forEach((el) => {
+      el.style.opacity = (0.3 + Math.random() * 0.7).toString();
+      
+      // Hitung arah ledakan acak berbentuk lingkaran radius lebar keluar
+      const angle = Math.random() * Math.PI * 2;
+      const explodeRadius = Math.min(window.innerWidth, window.innerHeight) * (0.15 + Math.random() * 0.25);
+      
+      el.style.left = (cx - 35 + Math.cos(angle) * explodeRadius) + 'px';
+      el.style.top = (cy - 6 + Math.sin(angle) * explodeRadius) + 'px';
     });
 
+    // STEP 2: MERAPAT MEMBENTUK HATI (Dijalankan beberapa saat setelah ledakan)
     setTimeout(() => {
-      words.forEach(el => { el.style.transition = 'opacity 2s ease'; });
-      pulseGlow();
-    }, totalDuration + 1000);
+      words.forEach((el) => {
+        el.style.left = el.dataset.targetX + 'px';
+        el.style.top = el.dataset.targetY + 'px';
+      });
+    }, 400); // Delay singkat agar efek hentakan ledakan terasa nyata
+
+    // STEP 3: UBAH TEKS BESAR DI TENGAH (Sama persis seperti transisi video)
+    setTimeout(() => {
+      mainText.style.opacity = '0';
+      mainText.style.transform = 'translate(-50%, -50%) scale(0.9)';
+      
+      setTimeout(() => {
+        mainText.textContent = "DEAR_POLLY"; // GANTI NAMA PASANGANMU DI SINI! ❤️
+        mainText.style.opacity = '1';
+        mainText.style.transform = 'translate(-50%, -50%) scale(1)';
+        
+        // Aktifkan efek kedap-kedip lembut setelah semuanya beres
+        pulseGlow();
+      }, 1000);
+    }, 2500);
   }
 
+  // Efek kedap-kedip romantis
   function pulseGlow() {
     let dim = true;
     setInterval(() => {
       words.forEach(el => {
-        const base = 0.4 + Math.random() * 0.5;
-        el.style.opacity = dim ? (base * 0.5).toString() : base.toString();
+        const base = 0.5 + Math.random() * 0.5;
+        el.style.opacity = dim ? (base * 0.4).toString() : base.toString();
       });
       dim = !dim;
-    }, 2500);
+    }, 2000);
   }
 
-  // Listener untuk resize layar agar posisi hati tetap presisi di tengah
-  window.addEventListener('resize', updatePositions);
+  // Fungsi penyesuaian otomatis jika orientasi layar bergeser
+  window.addEventListener('resize', () => {
+    if (!isDecrypted) return;
+    const finalPos = getHeartPositions();
+    words.forEach((el, i) => {
+      if (el) {
+        el.style.transition = 'none'; // Matikan transisi biar gak delay pas ditarik ke posisi baru
+        el.style.left = (finalPos[i].x - 35) + 'px';
+        el.style.top = (finalPos[i].y - 6) + 'px';
+        el.dataset.targetX = finalPos[i].x - 35;
+        el.dataset.targetY = finalPos[i].y - 6;
+      }
+    });
+  });
 
   buildWords();
   showTerminal();
