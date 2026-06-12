@@ -3,91 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Love You</title>
+    <title>Love Heart Canvas</title>
     <style>
-        /* Mengatur latar belakang hitam gelap khas kode pemrograman */
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #09090b;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: 'Courier New', Courier, monospace; /* Gaya font kode */
-            overflow: hidden;
+        /* CSS bawaan dari komentar TikTok */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
         }
-
-        /* Container utama pembentuk hati */
-        .heart-container {
-            position: relative;
-            width: 500px;
-            height: 450px;
-            text-align: justify;
-            word-break: break-all;
-            font-size: 10px;
-            font-weight: bold;
-            line-height: 9px;
-            color: #ff003c; /* Warna merah neon */
-            text-shadow: 0 0 4px #ff003c, 0 0 12px #ff4d6d; /* Efek menyala/glow */
-            user-select: none;
+        body { 
+            background: #000; 
+            overflow: hidden; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
         }
-
-        /* Trik CSS membuat bentuk lengkungan hati kiri dan kanan */
-        .heart-container::before,
-        .heart-container::after {
-            content: "";
-            width: 50%;
-            height: 100%;
-            float: left;
-            shape-image-threshold: 0.5;
-        }
-
-        .heart-container::before {
-            shape-outside: polygon(50% 0%, 100% 0%, 100% 35%, 60% 70%, 0% 100%, 0% 35%, 15% 10%);
-            clip-path: polygon(50% 0%, 100% 0%, 100% 35%, 60% 70%, 0% 100%, 0% 35%, 15% 10%);
-        }
-
-        .heart-container::after {
-            float: right;
-            shape-outside: polygon(50% 0%, 0% 0%, 0% 35%, 40% 70%, 100% 100%, 100% 35%, 85% 10%);
-            clip-path: polygon(50% 0%, 0% 0%, 0% 35%, 40% 70%, 100% 100%, 100% 35%, 85% 10%);
-        }
-
-        /* Teks utama "Love you." yang besar di bagian tengah */
-        .center-text {
-            position: absolute;
-            top: 45%;
-            left: 50%;
-            transform: translate(-50%, -50%)\;;
-            font-family: 'Inter', sans-serif;
-            font-size: 42px;
-            color: #ffffff;
-            text-shadow: 0 0 10px rgba(255,255,255,0.6), 0 0 20px rgba(255,77,109,0.3);
-            font-weight: 600;
-            z-index: 10;
-            white-space: nowrap;
+        canvas { 
+            display: block; 
         }
     </style>
 </head>
 <body>
 
-    <!-- Teks besar di tengah -->
-    <div class="center-text">Love you.</div>
-
-    <!-- Teks kecil-kecil yang membentuk hati -->
-    <div class="heart-container" id="heart">
-        <!-- Teks akan diisi otomatis menggunakan JavaScript di bawah ini agar rapi -->
-    </div>
+    <canvas id="c"></canvas>
 
     <script>
-        // Mengisi container dengan tulisan "i love you" berulang-ulang sampai penuh berbentuk hati
-        const container = document.getElementById('heart');
-        const textToRepeat = "iloveyou ";
-        
-        // Kita ulang teksnya sebanyak 350 kali supaya membentuk pola hati yang padat
-        container.innerHTML = textToRepeat.repeat(350);
-    </script>
+        const canvas = document.getElementById("c");
+        const ctx = canvas.getContext("2d");
 
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let angle = 0;
+        const NUM_STEPS = 120; // Jumlah teks, dinaikkan biar hatinya makin padat dan jelas
+        const SCALE = 13;      // Ukuran skala hati (makin besar angkanya, makin besar hatinya)
+        const TEXT = "I love you";
+
+        // Rumus Matematika pembentuk pola Hati (X dan Y)
+        function heartX(t) { 
+            return 16 * Math.pow(Math.sin(t), 3); 
+        }
+
+        function heartY(t) { 
+            return 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t); 
+        }
+
+        function draw() {
+            // Hapus layar setiap frame biar bersih
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Titik koordinat tengah layar browser
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            ctx.font = "bold 12px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            // Perulangan untuk menggambar teks "I love you" mengikuti rumus hati
+            for (let i = 0; i < NUM_STEPS; i++) {
+                // Menentukan posisi tiap teks berdasarkan step lingkaran (0 sampai 2*PI)
+                let t = (i / NUM_STEPS) * Math.PI * 2 + angle;
+                
+                // Hitung koordinat X dan Y berdasarkan rumus
+                let x = cx + heartX(t) * SCALE;
+                let y = cy - heartY(t) * SCALE; // Dikurang (-) karena koordinat Y canvas arahnya ke bawah
+
+                // Memberikan efek warna gradasi pink ke merah neon
+                let alpha = 0.3 + 0.7 * Math.sin(t + angle);
+                ctx.fillStyle = `rgba(255, 20, 147, ${alpha})`;
+                
+                // Efek bayangan menyala (Glow Effect)
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = "#ff1493";
+
+                // Gambar teks di koordinat tersebut
+                ctx.fillText(TEXT, x, y);
+            }
+
+            // Animasi berputar pelan
+            angle += 0.005;
+
+            // Panggil fungsi draw terus-menerus secara berulang (smooth animation)
+            requestAnimationFrame(draw);
+        }
+
+        // Jalankan animasinya
+        draw();
+
+        // Antisipasi kalau layar browser di-resize atau HP dimiringkan
+        window.addEventListener("resize", () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
 </body>
 </html>
