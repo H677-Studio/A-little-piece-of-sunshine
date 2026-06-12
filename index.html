@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Love Heart Canvas</title>
     <style>
-        /* CSS bawaan dari komentar TikTok */
+        /* Mengatur tampilan layar penuh dan latar belakang hitam */
         * { 
             margin: 0; 
             padding: 0; 
@@ -32,67 +32,63 @@
         const canvas = document.getElementById("c");
         const ctx = canvas.getContext("2d");
 
+        // Mengatur ukuran canvas sesuai ukuran layar browser
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
         let angle = 0;
-        const NUM_STEPS = 120; // Jumlah teks, dinaikkan biar hatinya makin padat dan jelas
-        const SCALE = 13;      // Ukuran skala hati (makin besar angkanya, makin besar hatinya)
+        const NUM_STEPS = 70;
+        const SCALE = 12; // Ukuran hati (bisa kamu besarkan/kecilkan di sini)
         const TEXT = "I love you";
 
-        // Rumus Matematika pembentuk pola Hati (X dan Y)
+        // Rumus matematika matematika untuk koordinat X dan Y bentuk hati
         function heartX(t) { 
             return 16 * Math.pow(Math.sin(t), 3); 
         }
-
+        
         function heartY(t) { 
             return 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t); 
         }
 
+        // Fungsi animasi untuk menggambar teks berbentuk hati
         function draw() {
-            // Hapus layar setiap frame biar bersih
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Titik koordinat tengah layar browser
+            
             const cx = canvas.width / 2;
             const cy = canvas.height / 2;
 
-            ctx.font = "bold 12px Arial";
+            ctx.font = "bold 11px Arial";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
 
-            // Perulangan untuk menggambar teks "I love you" mengikuti rumus hati
+            // Melakukan perulangan untuk memunculkan teks di sepanjang garis hati
             for (let i = 0; i < NUM_STEPS; i++) {
-                // Menentukan posisi tiap teks berdasarkan step lingkaran (0 sampai 2*PI)
+                // Menghitung sudut untuk setiap teks
                 let t = (i / NUM_STEPS) * Math.PI * 2 + angle;
                 
-                // Hitung koordinat X dan Y berdasarkan rumus
+                // Menentukan posisi koordinat X dan Y berdasarkan rumus hati
                 let x = cx + heartX(t) * SCALE;
-                let y = cy - heartY(t) * SCALE; // Dikurang (-) karena koordinat Y canvas arahnya ke bawah
+                let y = cy - heartY(t) * SCALE; // Dikurang (-) supaya posisi hatinya tidak terbalik
 
-                // Memberikan efek warna gradasi pink ke merah neon
+                // Efek warna gradasi merah-pink menyala
                 let alpha = 0.3 + 0.7 * Math.sin(t + angle);
                 ctx.fillStyle = `rgba(255, 20, 147, ${alpha})`;
-                
-                // Efek bayangan menyala (Glow Effect)
+                ctx.shadowColor = "rgba(255, 0, 100, 1)";
                 ctx.shadowBlur = 10;
-                ctx.shadowColor = "#ff1493";
 
-                // Gambar teks di koordinat tersebut
+                // Gambar teks "I love you" di koordinat tersebut
                 ctx.fillText(TEXT, x, y);
             }
 
-            // Animasi berputar pelan
-            angle += 0.005;
-
-            // Panggil fungsi draw terus-menerus secara berulang (smooth animation)
+            // Membuat hatinya berputar pelan secara otomatis
+            angle += 0.005; 
             requestAnimationFrame(draw);
         }
 
-        // Jalankan animasinya
+        // Jalankan fungsi animasi
         draw();
 
-        // Antisipasi kalau layar browser di-resize atau HP dimiringkan
+        // Biar ukuran canvas otomatis menyesuaikan kalau layar di-resize atau HP dimiringkan
         window.addEventListener("resize", () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
