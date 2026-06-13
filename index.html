@@ -8,29 +8,10 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; width: 100vw; height: 100vh; }
 
-  /* Tampilan Terminal Awal */
-  #terminal {
-    position: fixed; inset: 0; display: flex; flex-direction: column;
-    justify-content: center; align-items: flex-start; padding: 60px;
-    z-index: 10; background: #000; transition: opacity 1s ease;
-  }
-  .terminal-line { color: #fff; font-size: clamp(12px,2vw,16px); opacity: 0; margin-bottom: 10px; white-space: nowrap; }
-  .terminal-line.system { color: #888; }
-  .terminal-line.ready  { color: #ff2d55; }
-  .terminal-line.msg    { color: #fff; font-style: italic; }
+  /* Area Teks Hati - Langsung terlihat sejak awal */
+  #canvas { position: fixed; inset: 0; opacity: 1; }
 
-  #decrypt-btn {
-    margin-top: 28px; padding: 10px 24px; border: 1.5px solid #ff2d55;
-    background: transparent; color: #ff2d55; font-family: 'Courier New', monospace;
-    font-size: 13px; letter-spacing: 2px; cursor: pointer; opacity: 0;
-    transition: background 0.3s, color 0.3s;
-  }
-  #decrypt-btn:hover { background: #ff2d55; color: #000; }
-
-  /* Area Teks Hati */
-  #canvas { position: fixed; inset: 0; opacity: 0; transition: opacity 0.8s ease; }
-
-  /* Elemen Kata "i love you" Kecil (Diam di tempat) */
+  /* Elemen Kata "i love you" Kecil (Statis/Diam di tempat) */
   .word {
     position: absolute; color: #ff2d55; font-family: 'Courier New', monospace;
     font-size: 11px; white-space: nowrap; opacity: 0; pointer-events: none;
@@ -45,40 +26,12 @@
 </head>
 <body>
 
-<div id="terminal">
-  <div class="terminal-line system" id="t1">[system] Initializing heart.PROTOCOL_v2.0 ...</div>
-  <div class="terminal-line ready"  id="t2">[status] READY</div>
-  <div class="terminal-line msg"    id="t3">&gt; One encrypted package found for you.</div>
-  <button id="decrypt-btn" onclick="startHeart()">🔒 DECRYPT MESSAGE</button>
-</div>
-
 <div id="canvas"></div>
 
 <script>
   const WORD  = "i love you";
   const COUNT = 300;
   const words = [];
-  let isDecrypted = false;
-
-  // terminal intro
-  function showTerminal() {
-    ['t1','t2','t3'].forEach((id, i) => {
-      setTimeout(() => {
-        const el = document.getElementById(id);
-        if(el) {
-          el.style.transition = 'opacity 0.6s ease';
-          el.style.opacity = '1';
-        }
-      }, 600 + i * 700);
-    });
-    setTimeout(() => {
-      const btn = document.getElementById('decrypt-btn');
-      if(btn) {
-        btn.style.transition = 'opacity 0.8s ease';
-        btn.style.opacity = '1';
-      }
-    }, 2800);
-  }
 
   // ── Francisca's exact heart formula ────────────────────────────
   function heartX(t) { return 16 * Math.pow(Math.sin(t), 3); }
@@ -138,18 +91,9 @@
     }
   }
 
-  // ── Klik decrypt → murni fade in satu-satu secara acak di tempat ─────
-  function startHeart() {
-    if (isDecrypted) return;
-    isDecrypted = true;
-
-    const terminal = document.getElementById('terminal');
-    terminal.style.opacity = '0';
-    setTimeout(() => { terminal.style.display = 'none'; }, 1000);
-
-    document.getElementById('canvas').style.opacity = '1';
-
-    // Acak urutan tampil teks agar efek kemunculannya dramatis
+  // ── Fungsi memunculkan hati otomatis secara acak sejak awal ─────
+  function animateHeartDirectly() {
+    // Mengacak urutan tampil teks agar efek kemunculannya dramatis
     const shuffled = [...words].sort(() => Math.random() - 0.5);
     const totalDuration = 3200;
 
@@ -159,7 +103,7 @@
       }, Math.random() * totalDuration);
     });
 
-    // Jalankan efek kedap-kedip lembut setelah seluruh teks muncul
+    // Jalankan efek kedap-kedip lembut setelah seluruh teks muncul sempurna
     setTimeout(() => {
       words.forEach(el => { el.style.transition = 'opacity 2s ease'; });
       pulseGlow();
@@ -179,8 +123,9 @@
 
   window.addEventListener('resize', updatePositions);
 
+  // Jalankan pembuatan teks dan langsung eksekusi animasinya secara otomatis
   buildWords();
-  showTerminal();
+  animateHeartDirectly();
 </script>
 </body>
 </html>
