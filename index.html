@@ -8,7 +8,6 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; width: 100vw; height: 100vh; }
 
-  /* Tampilan Terminal Awal */
   #terminal {
     position: fixed; inset: 0; display: flex; flex-direction: column;
     justify-content: center; align-items: flex-start; padding: 60px;
@@ -19,7 +18,6 @@
   .terminal-line.ready  { color: #ff2d55; }
   .terminal-line.msg    { color: #fff; font-style: italic; }
 
-  /* Tombol Dekripsi */
   #decrypt-btn {
     margin-top: 28px; padding: 10px 24px; border: 1.5px solid #ff2d55;
     background: transparent; color: #ff2d55; font-family: 'Courier New', monospace;
@@ -27,104 +25,90 @@
     transition: background 0.3s, color 0.3s;
   }
   #decrypt-btn:hover { background: #ff2d55; color: #000; }
-  
-  .sub-text { color: #555; font-size: 11px; margin-top: 8px; opacity: 0; }
 
-  /* Area Teks Hati */
-  #canvas { position: fixed; inset: 0; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
+  #canvas { position: fixed; inset: 0; opacity: 0; transition: opacity 0.8s ease; }
 
-  /* Teks Besar di Tengah */
-  .center-text {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: clamp(32px, 5vw, 56px); color: #ffffff; font-weight: bold;
-    text-shadow: 0 0 15px rgba(255,255,255,0.4); z-index: 5;
-    opacity: 0; transition: opacity 0.8s ease, transform 0.8s ease;
-  }
-
-  /* Elemen Kata "i love you" (Stay/Diam di tempat) */
   .word {
     position: absolute; color: #ff2d55; font-family: 'Courier New', monospace;
-    font-size: 11px; white-space: nowrap; pointer-events: none;
-    text-shadow: 0 0 8px rgba(255,45,85,0.7);
-    opacity: 0;
-    /* Hanya mentransisikan opacity agar memunculkan efek fade-in acak tanpa geser */
-    transition: opacity 1.2s ease;
+    font-size: 11px; white-space: nowrap; opacity: 0; pointer-events: none;
+    text-shadow: 0 0 8px rgba(255,45,85,0.6);
+    transition: opacity 0.9s ease;
   }
   .word.bright {
     color: #ff6b8a; font-weight: bold;
-    text-shadow: 0 0 12px rgba(255,45,85,1), 0 0 24px rgba(255,45,85,0.5);
+    text-shadow: 0 0 12px rgba(255,45,85,0.9), 0 0 24px rgba(255,45,85,0.4);
   }
 </style>
 </head>
-<body onclick="handleGlobalClick()">
+<body>
 
 <div id="terminal">
   <div class="terminal-line system" id="t1">[system] Initializing heart.PROTOCOL_v2.0 ...</div>
   <div class="terminal-line ready"  id="t2">[status] READY</div>
   <div class="terminal-line msg"    id="t3">&gt; One encrypted package found for you.</div>
-  <button id="decrypt-btn" onclick="startHeart(event)">🔒 DECRYPT MESSAGE</button>
-  <div class="sub-text" id="t4">(or just click anywhere)</div>
+  <button id="decrypt-btn" onclick="startHeart()">🔒 DECRYPT MESSAGE</button>
 </div>
 
-<div id="canvas">
-  <div class="center-text" id="main-text">Love you.</div>
-</div>
+<div id="canvas"></div>
 
 <script>
   const WORD  = "i love you";
-  const COUNT = 330; 
+  const COUNT = 300;
   const words = [];
-  let isDecrypted = false;
+  let isDecrypted = false; // Flag status dekripsi
 
-  // Animasi teks terminal di awal
+  // terminal intro
   function showTerminal() {
     ['t1','t2','t3'].forEach((id, i) => {
       setTimeout(() => {
         const el = document.getElementById(id);
-        if(el) el.style.opacity = '1';
-      }, 500 + i * 600);
+        if(el) {
+          el.style.transition = 'opacity 0.6s ease';
+          el.style.opacity = '1';
+        }
+      }, 600 + i * 700);
     });
     setTimeout(() => {
       const btn = document.getElementById('decrypt-btn');
-      const sub = document.getElementById('t4');
-      if(btn) btn.style.opacity = '1';
-      if(sub) sub.style.opacity = '1';
-    }, 2300);
+      if(btn) {
+        btn.style.transition = 'opacity 0.8s ease';
+        btn.style.opacity = '1';
+      }
+    }, 2800);
   }
 
-  // Rumus matematika bentuk hati
+  // ── Francisca's exact heart formula ────────────────────────────
   function heartX(t) { return 16 * Math.pow(Math.sin(t), 3); }
   function heartY(t) { return 13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t); }
 
-  // Kalkulasi koordinat murni bentuk hati di tengah layar
+  // ── Generate posisi koordinat hati ────────────────────────────
   function getHeartPositions() {
     const W  = window.innerWidth;
     const H  = window.innerHeight;
     const cx = W / 2;
     const cy = H / 2;
-    const scale = Math.min(W, H) * 0.021; 
+    const scale = Math.min(W, H) * 0.022;
 
     const positions = [];
-    // Seed random konstan agar letak jitter tidak berubah saat layar di-resize
+    // Menggunakan pola seed acak yang konsisten agar posisi jitter tidak acak-acakan saat di-resize
     Math.seedrandom = function(v) { return function() { v = Math.sin(v) * 10000; return v - Math.floor(v); }; };
-    const random = Math.seedrandom(42);
+    const random = Math.seedrandom(42); 
 
     for (let i = 0; i < COUNT; i++) {
       const t = (i / COUNT) * 2 * Math.PI;
-      const jitterScale = scale * 0.16;
+      const jitterScale = scale * 0.18;
       const jx = (random() - 0.5) * jitterScale;
       const jy = (random() - 0.5) * jitterScale;
 
       positions.push({
-        x: cx + heartX(t) * scale + jx - 35, // -35 offset horizontal teks
-        y: cy - heartY(t) * scale + jy - 6   // -6 offset vertikal teks
+        x: cx + heartX(t) * scale + jx,
+        y: cy - heartY(t) * scale + jy
       });
     }
     return positions;
   }
 
-  // Menyusun teks langsung di posisinya (posisi mengunci/statis)
+  // ── Build elemen teks ke dalam canvas ──────────────────────────
   function buildWords() {
     const container = document.getElementById('canvas');
     const pos = getHeartPositions();
@@ -133,86 +117,62 @@
       const el = document.createElement('div');
       el.className = 'word' + (Math.random() < 0.15 ? ' bright' : '');
       el.textContent = WORD;
-      
-      // Teks langsung ditaruh di posisinya masing-masing sejak awal
-      el.style.left = pos[i].x + 'px';
-      el.style.top = pos[i].y + 'px';
-      el.style.opacity = '0'; // Disembunyikan dulu
-
+      el.style.left    = (pos[i].x - 38) + 'px';
+      el.style.top     = (pos[i].y - 6)  + 'px';
+      el.style.opacity = '0';
       container.appendChild(el);
       words.push(el);
     }
   }
 
-  function handleGlobalClick() {
-    if (!isDecrypted) startHeart();
+  // ── Fungsi kalkulasi ulang posisi saat layar di-resize ──────────
+  function updatePositions() {
+    const pos = getHeartPositions();
+    for (let i = 0; i < COUNT; i++) {
+      if (words[i]) {
+        words[i].style.left = (pos[i].x - 38) + 'px';
+        words[i].style.top  = (pos[i].y - 6)  + 'px';
+      }
+    }
   }
 
-  // Menjalankan efek fade-in acak
-  function startHeart(e) {
-    if (e) e.stopPropagation();
-    if (isDecrypted) return;
+  // ── Klik decrypt → fade in satu-satu acak → hati terbentuk ─────
+  function startHeart() {
     isDecrypted = true;
-
-    // Sembunyikan terminal utama
     const terminal = document.getElementById('terminal');
     terminal.style.opacity = '0';
     setTimeout(() => { terminal.style.display = 'none'; }, 1000);
 
-    // Tampilkan canvas tempat hati & teks tengah berada
     document.getElementById('canvas').style.opacity = '1';
-    const mainText = document.getElementById('main-text');
-    mainText.style.opacity = '1';
 
-    // Mengacak urutan kemunculan semua elemen kata
     const shuffled = [...words].sort(() => Math.random() - 0.5);
-    const maxDelay = 2200; // Total waktu rentang kemunculan acak teks kecil (dalam milidetik)
+    const totalDuration = 3200;
 
     shuffled.forEach(el => {
       setTimeout(() => {
-        // Mengubah nilai kejelasan (fade-in) tanpa mengubah posisi koordinat
         el.style.opacity = (0.45 + Math.random() * 0.55).toString();
-      }, Math.random() * maxDelay);
+      }, Math.random() * totalDuration);
     });
 
-    // Mengubah teks tengah ("Love you." -> nama target) setelah hati terbentuk sempurna
     setTimeout(() => {
-      mainText.style.opacity = '0';
-      mainText.style.transform = 'translate(-50%, -50%) scale(0.95)';
-      
-      setTimeout(() => {
-        mainText.textContent = "DEAR_POLLY"; // GANTI NAMA DIA DI SINI ❤️
-        mainText.style.opacity = '1';
-        mainText.style.transform = 'translate(-50%, -50%) scale(1)';
-        
-        // Mulai animasi kedap-kedip halus setelah semua rampung
-        pulseGlow();
-      }, 800);
-    }, maxDelay + 400);
+      words.forEach(el => { el.style.transition = 'opacity 2s ease'; });
+      pulseGlow();
+    }, totalDuration + 1000);
   }
 
-  // Efek denyut lampu/glow lembut pasca animasi selesai
   function pulseGlow() {
     let dim = true;
     setInterval(() => {
       words.forEach(el => {
-        const base = 0.5 + Math.random() * 0.5;
-        el.style.opacity = dim ? (base * 0.4).toString() : base.toString();
+        const base = 0.4 + Math.random() * 0.5;
+        el.style.opacity = dim ? (base * 0.5).toString() : base.toString();
       });
       dim = !dim;
-    }, 2000);
+    }, 2500);
   }
 
-  // Menjaga posisi bentuk hati tetap presisi di tengah jika ukuran jendela browser berubah
-  window.addEventListener('resize', () => {
-    const pos = getHeartPositions();
-    words.forEach((el, i) => {
-      if (el) {
-        el.style.left = pos[i].x + 'px';
-        el.style.top = pos[i].y + 'px';
-      }
-    });
-  });
+  // Listener untuk resize layar agar posisi hati tetap presisi di tengah
+  window.addEventListener('resize', updatePositions);
 
   buildWords();
   showTerminal();
