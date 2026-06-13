@@ -8,6 +8,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; width: 100vw; height: 100vh; }
 
+  /* Tampilan Terminal Awal */
   #terminal {
     position: fixed; inset: 0; display: flex; flex-direction: column;
     justify-content: center; align-items: flex-start; padding: 60px;
@@ -26,8 +27,10 @@
   }
   #decrypt-btn:hover { background: #ff2d55; color: #000; }
 
+  /* Area Teks Hati */
   #canvas { position: fixed; inset: 0; opacity: 0; transition: opacity 0.8s ease; }
 
+  /* Elemen Kata "i love you" Kecil (Diam di tempat) */
   .word {
     position: absolute; color: #ff2d55; font-family: 'Courier New', monospace;
     font-size: 11px; white-space: nowrap; opacity: 0; pointer-events: none;
@@ -55,7 +58,7 @@
   const WORD  = "i love you";
   const COUNT = 300;
   const words = [];
-  let isDecrypted = false; // Flag status dekripsi
+  let isDecrypted = false;
 
   // terminal intro
   function showTerminal() {
@@ -90,7 +93,6 @@
     const scale = Math.min(W, H) * 0.022;
 
     const positions = [];
-    // Menggunakan pola seed acak yang konsisten agar posisi jitter tidak acak-acakan saat di-resize
     Math.seedrandom = function(v) { return function() { v = Math.sin(v) * 10000; return v - Math.floor(v); }; };
     const random = Math.seedrandom(42); 
 
@@ -136,15 +138,18 @@
     }
   }
 
-  // ── Klik decrypt → fade in satu-satu acak → hati terbentuk ─────
+  // ── Klik decrypt → murni fade in satu-satu secara acak di tempat ─────
   function startHeart() {
+    if (isDecrypted) return;
     isDecrypted = true;
+
     const terminal = document.getElementById('terminal');
     terminal.style.opacity = '0';
     setTimeout(() => { terminal.style.display = 'none'; }, 1000);
 
     document.getElementById('canvas').style.opacity = '1';
 
+    // Acak urutan tampil teks agar efek kemunculannya dramatis
     const shuffled = [...words].sort(() => Math.random() - 0.5);
     const totalDuration = 3200;
 
@@ -154,6 +159,7 @@
       }, Math.random() * totalDuration);
     });
 
+    // Jalankan efek kedap-kedip lembut setelah seluruh teks muncul
     setTimeout(() => {
       words.forEach(el => { el.style.transition = 'opacity 2s ease'; });
       pulseGlow();
@@ -171,7 +177,6 @@
     }, 2500);
   }
 
-  // Listener untuk resize layar agar posisi hati tetap presisi di tengah
   window.addEventListener('resize', updatePositions);
 
   buildWords();
